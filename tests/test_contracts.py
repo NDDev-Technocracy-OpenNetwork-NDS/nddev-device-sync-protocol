@@ -108,6 +108,35 @@ class Contracts(unittest.TestCase):
         for extra in ["user_id", "tenant_id", "role"]:
             self.assertFalse(self.valid("InvitationEmailChallengeRequest", request | {extra: "chosen"}))
 
+    def test_renewed_authority_is_closed_metadata_without_credential_material(self):
+        session = {"user_id": "owner", "tenant_id": "tenant", "auth_method": "email_otp",
+                   "expires_at": "2026-01-08T00:00:00Z"}
+        reply = {"session": session, "verified_at": "2026-01-01T00:00:00Z",
+                 "authorization_id": "A" * 43}
+        self.assertTrue(self.valid("SessionRenewal", reply))
+        for field in reply:
+            self.assertFalse(self.valid("SessionRenewal", {k: v for k, v in reply.items() if k != field}))
+        for extra in ["session_token", "cookie", "vault_key", "device_private_key", "role"]:
+            self.assertFalse(self.valid("SessionRenewal", reply | {extra: "unexpected"}))
+        for invalid in ["", "A" * 42, "A" * 44, "A" * 43 + "=", "A" * 42 + "B", "A" * 43 + "\n"]:
+            self.assertFalse(self.valid("SessionRenewal", reply | {"authorization_id": invalid}))
+        for invalid in [None, "invalid", "2026-99-99T00:00:00Z", "2026-01-01T00:00:00Z" + "x" * 40]:
+            self.assertFalse(self.valid("SessionRenewal", reply | {"verified_at": invalid}))
+        self.assertFalse(self.valid("SessionRenewal", reply | {"session": session | {"session_token": "unexpected"}}))
+
+    def test_authority_renewal_requires_session_and_device_proof_for_both_transports(self):
+        api = yaml.safe_load((ROOT / "openapi/control-plane-v2.yaml").read_text())
+        operation = api["paths"]["/v2/session/renew"]["post"]
+        self.assertEqual(operation["security"], [
+            {"ownerSession": [], "deviceSignature": []},
+            {"browserSession": [], "deviceSignature": []},
+        ])
+        refs = {entry["$ref"].rsplit("/", 1)[-1] for entry in operation["parameters"]}
+        self.assertTrue({"SignatureInput", "Signature", "ContentDigest", "BrowserClient"} <= refs)
+        self.assertEqual(operation["responses"]["200"]["content"]["application/json"]["schema"]["$ref"],
+                         "../contracts/v2/control-plane.schema.json#/$defs/SessionRenewal")
+        self.assertNotIn("requestBody", operation)
+
     def test_browser_cookie_response_excludes_credentials_and_declares_platform(self):
         issued = {"session": {"user_id": "owner", "tenant_id": "tenant",
                               "auth_method": "passkey", "expires_at": "2026-01-01T00:00:00Z"}}
