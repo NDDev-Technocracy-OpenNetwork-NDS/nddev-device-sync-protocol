@@ -32,6 +32,7 @@ def main():
         "EmailChallengeRequest": {"email": "owner@example.invalid"},
         "EmailChallenge": {"challenge_id": "challenge-1", "expires_in_seconds": 300, "resend_after_seconds": 30},
         "EmailVerifyRequest": {"challenge_id": "challenge-1", "code": "12345678"},
+        "SessionRenewal": {"session": session, "verified_at": "2025-12-25T00:00:00Z", "authorization_id": "A" * 43},
         "Session": session, "SessionIssued": {"session": session, "session_token": "A" * 43},
         "GithubStart": {"flow_id": "flow-1", "authorization_url": "https://github.com/login/oauth/authorize", "exchange_token": "A" * 43, "expires_in_seconds": 300, "poll_after_seconds": 2, "verification_code": "12345678"},
         "GithubExchangeRequest": {"flow_id": "flow-1", "exchange_token": "A" * 43},
