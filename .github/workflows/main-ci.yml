@@ -53,5 +53,5 @@ jobs:
         run: just setup
       - name: Validate schemas, boundaries and generated Rust/Dart consumers
         run: just check
-      - name: Run the STD-0004 RustSec advisory audit
-        uses: NDDev-Technocracy-Standarts/std-0004-ci-cd-workflows/.github/actions/rustsec-audit@a77e385fcf3c1b000c38167ecac7b74bb7715b10 # std-0004-v0.3.1
+      - name: Run the RustSec advisory audit
+        run: cargo audit --deny warnings
