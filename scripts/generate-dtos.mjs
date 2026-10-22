@@ -54,7 +54,7 @@ const emittedObjects = selectedNames ? selectedNames.map(objectSchema) : [docume
 if (emittedObjects.some((object) => object.type !== "object" || object.additionalProperties !== false)) {
   throw new Error("This DTO profile requires reviewed closed object schemas");
 }
-const lock = readFileSync(new URL("../package-lock.json", import.meta.url));
+const lock = readFileSync(new URL("../bun.lock", import.meta.url));
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 class LocalStore extends JSONSchemaStore {
   async fetch(address) { return address === sharedSchema.$id ? sharedSchema : undefined; }
