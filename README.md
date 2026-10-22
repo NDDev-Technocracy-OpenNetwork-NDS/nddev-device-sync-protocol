@@ -27,3 +27,5 @@ sync or telemetry service. See [development](docs/development.md) for generation
 and [v2 semantics](docs/protocol-v2.md) for trust and consistency rules. The
 [sync history lifecycle](docs/sync-lifecycle-v3.md) defines retained originals,
 checkpoint installation and the transition from existing data.
+
+Release journals live in [GitHub Releases](https://github.com/NDDev-Technocracy-OpenNetwork-NDS/nddev-device-sync-protocol/releases).

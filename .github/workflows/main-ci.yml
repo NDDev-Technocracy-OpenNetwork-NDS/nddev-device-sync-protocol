@@ -1,0 +1,48 @@
+name: main-ci
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: main-validation
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3
+        with:
+          just-version: '1.59.0'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version-file: .python-version
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .node-version
+      - name: Install the pinned Rust compiler
+        run: rustup toolchain install 1.99.1 --profile minimal --component rustfmt,clippy
+      - name: Install the verified Dart SDK
+        shell: bash
+        run: |
+          dart_archive="$RUNNER_TEMP/dart-sdk.zip"
+          curl --fail --show-error --location --retry 2 --max-time 300 \
+            https://storage.googleapis.com/dart-archive/channels/stable/release/3.13.5/sdk/dartsdk-linux-x64-release.zip \
+            --output "$dart_archive"
+          echo "ea864bc64df30a6b8bdf30b2e32550f7717d9a890de8f40293aeabb924fe232b  $dart_archive" | sha256sum --check -
+          unzip -q "$dart_archive" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/dart-sdk/bin" >> "$GITHUB_PATH"
+      - name: Install locked validation and generation tools
+        run: just setup
+      - name: Validate schemas, boundaries and generated Rust/Dart consumers
+        run: just check
