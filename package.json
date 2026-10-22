@@ -2,6 +2,11 @@
   "name": "nddev-device-sync-protocol-tools",
   "private": true,
   "license": "AGPL-3.0-only",
-  "engines": { "node": ">=20" },
-  "devDependencies": { "quicktype-core": "26.0.0" }
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "quicktype-core": "26.0.0"
+  },
+  "packageManager": "bun@1.4.3"
 }
