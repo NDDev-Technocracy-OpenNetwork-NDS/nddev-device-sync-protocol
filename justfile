@@ -6,7 +6,7 @@ default:
 setup:
     python3 -m venv .venv
     .venv/bin/python -m pip install --require-hashes -r requirements.lock
-    npm ci --ignore-scripts --no-fund
+    bun install --frozen-lockfile --ignore-scripts
 
 schema-check:
     .venv/bin/python scripts/validate.py
@@ -21,5 +21,6 @@ signatures-check:
     cargo fmt --all -- --check
     cargo test --workspace --locked --jobs 4
     cargo clippy --workspace --all-targets --locked --jobs 4 -- -D warnings
+    cargo deny --locked check licenses sources
 
 check: schema-check test codegen-check signatures-check
