@@ -16,6 +16,7 @@ const authNames = [
   "Session", "SessionRenewal", "SessionIssued", "BrowserSessionIssued", "BrowserCapabilities", "GithubStart", "GithubExchangeRequest", "GithubPending", "GithubApprovalForm", "PasskeyStart", "PasskeyRequest", "PasskeyStatus", "PasskeyInfo", "PasskeyList", "PasskeyRevocation", "Error",
 ];
 const deviceNames = ["EnrollmentRequest", "EnrollmentChallenge", "EnrollmentProof", "Device", "DeviceList", "Error"];
+const personalNames = ["PersonalContext", "PersonalSpace", "PersonalDeviceList", "Device", "Error"];
 const vaultNames = ["VaultKey", "VaultKeyRequest", "Error"];
 const syncNames = ["SyncOperation", "EncryptedPayload", "SyncApplied", "SyncConflict", "SyncPage", "SyncEntry", "Error"];
 const sync3Names = ["SyncOperationV3", "Lifecycle", "EncryptedPayload", "SyncCapabilities", "SyncRow", "SyncDeltaPage", "SyncBasePage", "SyncExpired", "Error", "SyncApplied", "SyncConflict"];
@@ -24,13 +25,13 @@ const observabilityNames = ["Incident", "IncidentPage", "IncidentAction", "Silen
 const companyNames = ["Company", "CompanyMember", "CompanyOverview", "CompanyInvitation", "CompanyMemberPage", "CompanyInvitationPage", "CompanyInvitationRequest", "CompanyRevokeRequest", "CompanyMemberChangeRequest", "CompanyError"];
 const screenNames = ["ScreenTarget", "ScreenTargetList", "ScreenBinding", "ScreenBindingResponse", "ScreenBindRequest", "ScreenViewRequest", "ScreenView", "ScreenIncoming", "ScreenViewResponse", "ScreenReadyRequest", "Error"];
 const [language, selected, output] = process.argv.slice(2);
-if (!["rust", "dart"].includes(language) || !(Object.hasOwn(names, selected) || ["auth", "devices", "sync", "sync3", "vault", "observability", "screen", "company"].includes(selected)) || !output) {
-  throw new Error("Usage: node scripts/generate-dtos.mjs rust|dart health|ready|source|auth|devices|sync|sync3|vault|telemetry|observability|screen|company OUTPUT");
+if (!["rust", "dart"].includes(language) || !(Object.hasOwn(names, selected) || ["auth", "devices", "personal", "sync", "sync3", "vault", "observability", "screen", "company"].includes(selected)) || !output) {
+  throw new Error("Usage: node scripts/generate-dtos.mjs rust|dart health|ready|source|auth|devices|personal|sync|sync3|vault|telemetry|observability|screen|company OUTPUT");
 }
-if (["telemetry", "observability", "vault", "screen", "sync3", "company"].includes(selected) && language !== "rust") {
+if (["telemetry", "observability", "vault", "screen", "sync3", "company", "personal"].includes(selected) && language !== "rust") {
   throw new Error("This profile has only a Rust consumer");
 }
-const path = selected === "sync3" ? "contracts/v3/sync.schema.json" : ["auth", "devices", "sync", "vault"].includes(selected)
+const path = selected === "personal" ? "contracts/v3/personal.schema.json" : selected === "sync3" ? "contracts/v3/sync.schema.json" : ["auth", "devices", "sync", "vault"].includes(selected)
   ? "contracts/v2/control-plane.schema.json"
   : selected === "company" ? "contracts/v2/company.schema.json"
   : selected === "screen" ? "contracts/v2/screen.schema.json"
@@ -39,7 +40,7 @@ const path = selected === "sync3" ? "contracts/v3/sync.schema.json" : ["auth", "
   : `contracts/v1/${names[selected][0]}.schema.json`;
 const source = readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const document = JSON.parse(source);
-const selectedNames = selected === "auth" ? authNames : selected === "devices" ? deviceNames : selected === "observability" ? observabilityNames : selected === "sync" ? syncNames : selected === "sync3" ? sync3Names : selected === "vault" ? vaultNames : selected === "company" ? companyNames : selected === "screen" ? screenNames : undefined;
+const selectedNames = selected === "personal" ? personalNames : selected === "auth" ? authNames : selected === "devices" ? deviceNames : selected === "observability" ? observabilityNames : selected === "sync" ? syncNames : selected === "sync3" ? sync3Names : selected === "vault" ? vaultNames : selected === "company" ? companyNames : selected === "screen" ? screenNames : undefined;
 const sharedPath = "contracts/v2/control-plane.schema.json";
 const sharedSource = readFileSync(new URL(`../${sharedPath}`, import.meta.url), "utf8");
 const sharedSchema = JSON.parse(sharedSource);

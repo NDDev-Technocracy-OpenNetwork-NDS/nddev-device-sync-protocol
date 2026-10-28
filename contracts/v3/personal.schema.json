@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nddev.ai/schemas/nddev-device-sync/v3/personal.schema.json",
+  "title": "NDS original personal context and device inventory",
+  "description": "An authenticated personal-space observation, not a grant. Personal space identity is the stable principal ID; existing tenant/user storage bindings, device keys and ciphertext remain unchanged. Organization selection and shared resources are outside this profile.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/PersonalDeviceList"
+    },
+    {
+      "$ref": "#/$defs/Error"
+    }
+  ],
+  "$defs": {
+    "PersonalSpace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "personal"
+          ]
+        },
+        "id": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/Identifier"
+        }
+      }
+    },
+    "PersonalContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "principal_id",
+        "space"
+      ],
+      "properties": {
+        "principal_id": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/Identifier"
+        },
+        "space": {
+          "$ref": "#/$defs/PersonalSpace"
+        }
+      },
+      "description": "The server derives principal_id and space.id from the same authenticated user; consumers must require equality to their captured initiating principal. This does not expose session credentials or legacy storage ownership."
+    },
+    "PersonalDeviceList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "devices",
+        "next_cursor"
+      ],
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/PersonalContext"
+        },
+        "devices": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/DeviceList/properties/devices",
+          "maxItems": 32
+        },
+        "next_cursor": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/DeviceList/properties/next_cursor"
+        }
+      }
+    },
+    "Error": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/Error"
+    },
+    "Device": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/Device"
+    }
+  }
+}
