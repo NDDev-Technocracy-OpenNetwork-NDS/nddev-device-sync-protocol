@@ -29,3 +29,7 @@ and [v2 semantics](docs/protocol-v2.md) for trust and consistency rules. The
 checkpoint installation and the transition from existing data.
 
 Release journals live in [GitHub Releases](https://github.com/NDDev-Technocracy-OpenNetwork-NDS/nddev-device-sync-protocol/releases).
+
+The [personal context profile](docs/personal-context-v3.md) adds an explicitly
+scoped read-only device inventory. It retains existing v2 wire/storage identities;
+providers and consumers qualify context relationships and actual authority.
