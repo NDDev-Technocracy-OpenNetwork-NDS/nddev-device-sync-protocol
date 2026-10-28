@@ -1,0 +1,48 @@
+openapi: 3.1.0
+info:
+  title: NDS personal-space observation
+  version: 3.0.0-alpha.1
+  license:
+    name: AGPL-3.0-only
+  description: Read-only explicit personal context; original v2 authentication, device
+    inventory constraints and no-store behavior remain. No organizational authority
+    is inferred from personal IDs. Each endpoint/profile owns its protocol version;
+    this is not sync-v3 payload compatibility.
+servers:
+- url: https://self-hosted.example.invalid
+paths:
+  /v3/personal/devices:
+    get:
+      operationId: listPersonalDevices
+      description: Derive the personal space from the current authenticated principal.
+        Request fields cannot select another principal or organization. Return a bounded
+        page under the original immutable storage binding. A context is an observation,
+        not permission.
+      responses:
+        '200':
+          description: Device page bound to the original authenticated personal context
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/personal.schema.json#/$defs/PersonalDeviceList
+        '400':
+          $ref: control-plane-v2.yaml#/components/responses/InvalidRequest
+        '401':
+          $ref: control-plane-v2.yaml#/components/responses/AuthenticationFailed
+        '429':
+          $ref: control-plane-v2.yaml#/components/responses/RateLimited
+        '503':
+          $ref: control-plane-v2.yaml#/components/responses/ServiceUnavailable
+      parameters:
+      - $ref: control-plane-v2.yaml#/paths/~1v2~1devices/get/parameters/0
+      - $ref: control-plane-v2.yaml#/paths/~1v2~1devices/get/parameters/1
+      - $ref: control-plane-v2.yaml#/paths/~1v2~1devices/get/parameters/2
+      security:
+      - ownerSession: []
+      - browserSession: []
+components:
+  securitySchemes:
+    ownerSession:
+      $ref: control-plane-v2.yaml#/components/securitySchemes/ownerSession
+    browserSession:
+      $ref: control-plane-v2.yaml#/components/securitySchemes/browserSession

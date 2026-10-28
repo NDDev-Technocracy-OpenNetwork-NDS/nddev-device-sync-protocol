@@ -1,6 +1,7 @@
 """Validate canonical schemas and OpenAPI semantics without remote references."""
 
 import json
+import re
 from pathlib import Path
 from urllib.parse import unquote, urldefrag
 
@@ -71,7 +72,13 @@ def validate_api(document, path):
             if not fragment.startswith("/"):
                 raise ValueError("Expected a JSON Pointer reference")
             for part in fragment[1:].split("/"):
-                resolved = resolved[unquote(part).replace("~1", "/").replace("~0", "~")]
+                key = unquote(part).replace("~1", "/").replace("~0", "~")
+                if isinstance(resolved, list):
+                    if not re.fullmatch(r"0|[1-9][0-9]*", key):
+                        raise ValueError("OpenAPI array reference requires a canonical index")
+                    resolved = resolved[int(key)]
+                else:
+                    resolved = resolved[key]
     # Resolve canonical cross-schema IDs from the reviewed local tree too.
     # OpenAPI's default fetcher cannot infer a local file from its canonical $id.
     documents, _ = schemas()
