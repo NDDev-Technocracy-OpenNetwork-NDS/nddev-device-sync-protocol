@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nddev.ai/schemas/nddev-device-sync/v3/organizations.schema.json",
+  "title": "NDS independent organization membership",
+  "description": "Current membership is independent of the original personal storage owner. A signed route selects an organization; every scoped response identifies that same organization and initiating principal. Context metadata is not a grant. Existing company payloads retain their canonical definitions. Personal keys, ciphertext, pending work and session ownership are never relabeled.",
+  "x-codegen-languages": [
+    "rust"
+  ],
+  "$defs": {
+    "OrganizationSpace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "organization"
+          ]
+        },
+        "id": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/Identifier"
+        }
+      }
+    },
+    "OrganizationContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "principal_id",
+        "space",
+        "membership_revision"
+      ],
+      "properties": {
+        "principal_id": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/Identifier"
+        },
+        "space": {
+          "$ref": "#/$defs/OrganizationSpace"
+        },
+        "membership_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "OrganizationList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "organizations"
+      ],
+      "properties": {
+        "context": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v3/personal.schema.json#/$defs/PersonalContext"
+        },
+        "organizations": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyOverview"
+          }
+        }
+      }
+    },
+    "OrganizationCreateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_id",
+        "display_name"
+      ],
+      "properties": {
+        "operation_id": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CommandId"
+        },
+        "display_name": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/Company/properties/display_name"
+        }
+      },
+      "description": "An already verified and enrolled principal creates an organization with an administrative membership. No open account registration or global administration is implied. The original command ID and exact bytes own replay; capacity is a typed refusal."
+    },
+    "OrganizationOverview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "overview"
+      ],
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/OrganizationContext"
+        },
+        "overview": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyOverview"
+        }
+      }
+    },
+    "OrganizationMemberPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "page"
+      ],
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/OrganizationContext"
+        },
+        "page": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyMemberPage"
+        }
+      }
+    },
+    "OrganizationInvitationPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "page"
+      ],
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/OrganizationContext"
+        },
+        "page": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyInvitationPage"
+        }
+      }
+    },
+    "OrganizationInvitationResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "invitation"
+      ],
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/OrganizationContext"
+        },
+        "invitation": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyInvitation"
+        }
+      }
+    },
+    "OrganizationMemberResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "member"
+      ],
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/OrganizationContext"
+        },
+        "member": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyMember"
+        }
+      }
+    },
+    "PersonalContext": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v3/personal.schema.json#/$defs/PersonalContext"
+    },
+    "PersonalSpace": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v3/personal.schema.json#/$defs/PersonalSpace"
+    },
+    "CompanyOverview": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyOverview"
+    },
+    "Company": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/Company"
+    },
+    "CompanyMember": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyMember"
+    },
+    "CompanyMemberPage": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyMemberPage"
+    },
+    "CompanyInvitationPage": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyInvitationPage"
+    },
+    "CompanyInvitation": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyInvitation"
+    },
+    "OrganizationInvitationRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership_revision",
+        "payload"
+      ],
+      "properties": {
+        "membership_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "payload": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyInvitationRequest"
+        }
+      },
+      "description": "Capture the initiating membership revision once with the immutable command. Role change/removal/rejoin cannot lend a newer grant to an earlier command."
+    },
+    "CompanyInvitationRequest": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyInvitationRequest"
+    },
+    "OrganizationRevokeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership_revision",
+        "payload"
+      ],
+      "properties": {
+        "membership_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "payload": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyRevokeRequest"
+        }
+      },
+      "description": "Capture the initiating membership revision once with the immutable command. Role change/removal/rejoin cannot lend a newer grant to an earlier command."
+    },
+    "CompanyRevokeRequest": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyRevokeRequest"
+    },
+    "OrganizationMemberChangeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "membership_revision",
+        "payload"
+      ],
+      "properties": {
+        "membership_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "payload": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyMemberChangeRequest"
+        }
+      },
+      "description": "Capture the initiating membership revision once with the immutable command. Role change/removal/rejoin cannot lend a newer grant to an earlier command."
+    },
+    "CompanyMemberChangeRequest": {
+      "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/company.schema.json#/$defs/CompanyMemberChangeRequest"
+    }
+  }
+}

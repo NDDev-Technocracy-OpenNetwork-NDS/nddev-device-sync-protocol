@@ -1,0 +1,275 @@
+openapi: 3.1.0
+info:
+  title: NDS independent organizations
+  version: 3.0.0-alpha.1
+  license:
+    name: AGPL-3.0-only
+  description: >-
+    Personal identity and original key/storage bindings survive organization
+    membership changes. Reads and immutable commands require current membership
+    under the same transaction as the effect. The signed path selects the
+    organization; a context in a response is an observation, never a grant.
+    Legacy v2/company reads project only the original organization's current
+    membership. Legacy mutations without a captured membership revision refuse;
+    they cannot acquire another organization or a later rejoined grant.
+servers:
+  - url: https://self-hosted.example.invalid
+security:
+  - ownerSession: []
+    deviceSignature: []
+  - browserSession: []
+    deviceSignature: []
+paths:
+  /v3/organizations:
+    get:
+      operationId: listOrganizations
+      description: Return at most 32 current memberships for the authenticated personal principal. No body or query is accepted.
+      parameters:
+        - $ref: '#/components/parameters/SignatureInput'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/ContentDigest'
+        - $ref: '#/components/parameters/BrowserClient'
+      responses:
+        '200':
+          description: Bounded current memberships under the original personal context
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationList
+        '401':
+          $ref: control-plane-v2.yaml#/components/responses/AuthenticationFailed
+        '503':
+          $ref: control-plane-v2.yaml#/components/responses/ServiceUnavailable
+    post:
+      operationId: createOrganization
+      description: >-
+        A verified enrolled principal becomes administrator of a new organization.
+        Retain the UUIDv7 and exact request on uncertain delivery. At most 32
+        retained memberships per principal, including removed rows. Reactivation
+        reuses a row. Creation neither registers a new account nor changes its
+        personal identity. No automatic effect retry is authorized.
+      parameters:
+        - $ref: '#/components/parameters/SignatureInput'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/ContentDigest'
+        - $ref: '#/components/parameters/BrowserClient'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationCreateRequest
+      responses:
+        '201':
+          description: Committed organization and administrative membership
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationOverview
+        '409':
+          $ref: '#/components/responses/CompanyFailure'
+        '503':
+          $ref: '#/components/responses/CompanyFailure'
+  /v3/organizations/{company_id}:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    get:
+      operationId: readOrganization
+      parameters:
+        - $ref: '#/components/parameters/MembershipRevision'
+        - $ref: '#/components/parameters/SignatureInput'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/ContentDigest'
+        - $ref: '#/components/parameters/BrowserClient'
+      responses:
+        '200':
+          description: Current selected membership and company metadata
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationOverview
+        '403':
+          $ref: '#/components/responses/CompanyFailure'
+  /v3/organizations/{company_id}/members:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    get:
+      operationId: listOrganizationMembers
+      parameters:
+        - $ref: '#/components/parameters/MembershipRevision'
+        - $ref: '#/components/parameters/SignatureInput'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/ContentDigest'
+        - $ref: '#/components/parameters/BrowserClient'
+        - $ref: '#/components/parameters/After'
+      responses:
+        '200':
+          description: Administrator-only page bound to the selected organization
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationMemberPage
+        '403':
+          $ref: '#/components/responses/CompanyFailure'
+  /v3/organizations/{company_id}/invitations:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+    get:
+      operationId: listOrganizationInvitations
+      parameters:
+        - $ref: '#/components/parameters/MembershipRevision'
+        - $ref: '#/components/parameters/SignatureInput'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/ContentDigest'
+        - $ref: '#/components/parameters/BrowserClient'
+        - $ref: '#/components/parameters/After'
+      responses:
+        '200':
+          description: Administrator-only page; invitation email is sensitive and is not logged
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationInvitationPage
+    post:
+      operationId: inviteOrganizationMember
+      parameters:
+        - $ref: '#/components/parameters/SignatureInput'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/ContentDigest'
+        - $ref: '#/components/parameters/BrowserClient'
+      description: >-
+        Existing principals keep their original owner when accepting another
+        organization's invitation. The protected invitation and intended-email
+        OTP are both required; current issuer authority is checked again during
+        consumption. Creation, SMTP result and membership acceptance stay distinct.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationInvitationRequest
+      responses:
+        '201':
+          description: Committed one-use invitation; not proof of delivery or join
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationInvitationResult
+        '403':
+          $ref: '#/components/responses/CompanyFailure'
+        '409':
+          $ref: '#/components/responses/CompanyFailure'
+  /v3/organizations/{company_id}/invitations/{invitation_id}/revoke:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+      - name: invitation_id
+        in: path
+        required: true
+        schema:
+          $ref: ../contracts/v2/company.schema.json#/$defs/InvitationId
+    post:
+      operationId: revokeOrganizationInvitation
+      parameters:
+        - $ref: '#/components/parameters/SignatureInput'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/ContentDigest'
+        - $ref: '#/components/parameters/BrowserClient'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationRevokeRequest
+      responses:
+        '200':
+          description: Revoked or previously terminal invitation under current administrator authority
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationInvitationResult
+        '403':
+          $ref: '#/components/responses/CompanyFailure'
+        '409':
+          $ref: '#/components/responses/CompanyFailure'
+  /v3/organizations/{company_id}/members/{user_id}:
+    parameters:
+      - $ref: '#/components/parameters/CompanyId'
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          $ref: ../contracts/v2/control-plane.schema.json#/$defs/Identifier
+    post:
+      operationId: changeOrganizationMember
+      parameters:
+        - $ref: '#/components/parameters/SignatureInput'
+        - $ref: '#/components/parameters/Signature'
+        - $ref: '#/components/parameters/ContentDigest'
+        - $ref: '#/components/parameters/BrowserClient'
+      description: >-
+        Check current administrator and expected member revision atomically.
+        Never remove or demote the last active administrator. Removal denies
+        this organization and its administrative RDS authority, preserving
+        personal sessions, keys, ciphertext, devices and other memberships.
+        Receipt replay is still authorized against current membership.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationMemberChangeRequest
+      responses:
+        '200':
+          description: Committed current membership, including a retained inactive row
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/organizations.schema.json#/$defs/OrganizationMemberResult
+        '403':
+          $ref: '#/components/responses/CompanyFailure'
+        '409':
+          $ref: '#/components/responses/CompanyFailure'
+components:
+  securitySchemes:
+    ownerSession:
+      $ref: control-plane-v2.yaml#/components/securitySchemes/ownerSession
+    browserSession:
+      $ref: control-plane-v2.yaml#/components/securitySchemes/browserSession
+    deviceSignature:
+      $ref: control-plane-v2.yaml#/components/securitySchemes/deviceSignature
+  parameters:
+    SignatureInput:
+      $ref: control-plane-v2.yaml#/components/parameters/SignatureInput
+    Signature:
+      $ref: control-plane-v2.yaml#/components/parameters/Signature
+    ContentDigest:
+      $ref: control-plane-v2.yaml#/components/parameters/ContentDigest
+    BrowserClient:
+      $ref: control-plane-v2.yaml#/components/parameters/BrowserClient
+    CompanyId:
+      name: company_id
+      in: path
+      required: true
+      schema:
+        $ref: ../contracts/v2/control-plane.schema.json#/$defs/Identifier
+    MembershipRevision:
+      name: membership_revision
+      in: query
+      required: true
+      description: The original selected membership revision, included in the signed target URI. A mismatch refuses before data or effects.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 9007199254740991
+    After:
+      name: after
+      in: query
+      schema:
+        $ref: ../contracts/v2/control-plane.schema.json#/$defs/Identifier
+  responses:
+    CompanyFailure:
+      description: Typed authorization, revision, invitation, capacity or dependency failure; never proof that an uncertain request had no effect
+      content:
+        application/json:
+          schema:
+            $ref: ../contracts/v2/company.schema.json#/$defs/CompanyError
