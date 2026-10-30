@@ -17,6 +17,7 @@ const authNames = [
 ];
 const deviceNames = ["EnrollmentRequest", "EnrollmentChallenge", "EnrollmentProof", "Device", "DeviceList", "Error"];
 const personalNames = ["PersonalContext", "PersonalSpace", "PersonalDeviceList", "Device", "Error"];
+const organizationsNames = ["OrganizationList", "OrganizationContext", "OrganizationSpace", "OrganizationCreateRequest", "OrganizationOverview", "OrganizationMemberPage", "OrganizationInvitationPage", "OrganizationInvitationResult", "OrganizationMemberResult", "PersonalContext", "PersonalSpace", "CompanyOverview", "Company", "CompanyMember", "CompanyMemberPage", "CompanyInvitationPage", "CompanyInvitation", "OrganizationInvitationRequest", "OrganizationRevokeRequest", "OrganizationMemberChangeRequest", "CompanyInvitationRequest", "CompanyRevokeRequest", "CompanyMemberChangeRequest"];
 const vaultNames = ["VaultKey", "VaultKeyRequest", "Error"];
 const syncNames = ["SyncOperation", "EncryptedPayload", "SyncApplied", "SyncConflict", "SyncPage", "SyncEntry", "Error"];
 const sync3Names = ["SyncOperationV3", "Lifecycle", "EncryptedPayload", "SyncCapabilities", "SyncRow", "SyncDeltaPage", "SyncBasePage", "SyncExpired", "Error", "SyncApplied", "SyncConflict"];
@@ -25,13 +26,13 @@ const observabilityNames = ["Incident", "IncidentPage", "IncidentAction", "Silen
 const companyNames = ["Company", "CompanyMember", "CompanyOverview", "CompanyInvitation", "CompanyMemberPage", "CompanyInvitationPage", "CompanyInvitationRequest", "CompanyRevokeRequest", "CompanyMemberChangeRequest", "CompanyError"];
 const screenNames = ["ScreenTarget", "ScreenTargetList", "ScreenBinding", "ScreenBindingResponse", "ScreenBindRequest", "ScreenViewRequest", "ScreenView", "ScreenIncoming", "ScreenViewResponse", "ScreenReadyRequest", "Error"];
 const [language, selected, output] = process.argv.slice(2);
-if (!["rust", "dart"].includes(language) || !(Object.hasOwn(names, selected) || ["auth", "devices", "personal", "sync", "sync3", "vault", "observability", "screen", "company"].includes(selected)) || !output) {
-  throw new Error("Usage: node scripts/generate-dtos.mjs rust|dart health|ready|source|auth|devices|personal|sync|sync3|vault|telemetry|observability|screen|company OUTPUT");
+if (!["rust", "dart"].includes(language) || !(Object.hasOwn(names, selected) || ["auth", "devices", "personal", "organizations", "sync", "sync3", "vault", "observability", "screen", "company"].includes(selected)) || !output) {
+  throw new Error("Usage: node scripts/generate-dtos.mjs rust|dart health|ready|source|auth|devices|personal|organizations|sync|sync3|vault|telemetry|observability|screen|company OUTPUT");
 }
-if (["telemetry", "observability", "vault", "screen", "sync3", "company", "personal"].includes(selected) && language !== "rust") {
+if (["telemetry", "observability", "vault", "screen", "sync3", "company", "personal", "organizations"].includes(selected) && language !== "rust") {
   throw new Error("This profile has only a Rust consumer");
 }
-const path = selected === "personal" ? "contracts/v3/personal.schema.json" : selected === "sync3" ? "contracts/v3/sync.schema.json" : ["auth", "devices", "sync", "vault"].includes(selected)
+const path = selected === "organizations" ? "contracts/v3/organizations.schema.json" : selected === "personal" ? "contracts/v3/personal.schema.json" : selected === "sync3" ? "contracts/v3/sync.schema.json" : ["auth", "devices", "sync", "vault"].includes(selected)
   ? "contracts/v2/control-plane.schema.json"
   : selected === "company" ? "contracts/v2/company.schema.json"
   : selected === "screen" ? "contracts/v2/screen.schema.json"
@@ -40,16 +41,26 @@ const path = selected === "personal" ? "contracts/v3/personal.schema.json" : sel
   : `contracts/v1/${names[selected][0]}.schema.json`;
 const source = readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const document = JSON.parse(source);
-const selectedNames = selected === "personal" ? personalNames : selected === "auth" ? authNames : selected === "devices" ? deviceNames : selected === "observability" ? observabilityNames : selected === "sync" ? syncNames : selected === "sync3" ? sync3Names : selected === "vault" ? vaultNames : selected === "company" ? companyNames : selected === "screen" ? screenNames : undefined;
+const selectedNames = selected === "organizations" ? organizationsNames : selected === "personal" ? personalNames : selected === "auth" ? authNames : selected === "devices" ? deviceNames : selected === "observability" ? observabilityNames : selected === "sync" ? syncNames : selected === "sync3" ? sync3Names : selected === "vault" ? vaultNames : selected === "company" ? companyNames : selected === "screen" ? screenNames : undefined;
 const sharedPath = "contracts/v2/control-plane.schema.json";
 const sharedSource = readFileSync(new URL(`../${sharedPath}`, import.meta.url), "utf8");
 const sharedSchema = JSON.parse(sharedSource);
+const dependencies = new Map([[sharedSchema.$id, { schema: sharedSchema, source: sharedSource }]]);
+if (selected === "organizations") {
+  for (const file of ["contracts/v2/company.schema.json", "contracts/v3/personal.schema.json"]) {
+    const source = readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+    const schema = JSON.parse(source);
+    dependencies.set(schema.$id, { schema, source });
+  }
+}
 // Common Error remains the same canonical object, referenced by the profile.
 function objectSchema(name) {
   const schema = document.$defs[name];
-  const commonPrefix = `${sharedSchema.$id}#/$defs/`;
-  return schema.$ref?.startsWith(commonPrefix)
-    ? sharedSchema.$defs[schema.$ref.slice(commonPrefix.length)] : schema;
+  if (!schema.$ref) return schema;
+  const [identity, fragment] = schema.$ref.split("#/$defs/");
+  const dependency = dependencies.get(identity);
+  if (!dependency || !fragment || fragment.includes("/")) throw new Error("Unreviewed object alias");
+  return dependency.schema.$defs[fragment];
 }
 const emittedObjects = selectedNames ? selectedNames.map(objectSchema) : [document];
 if (emittedObjects.some((object) => object.type !== "object" || object.additionalProperties !== false)) {
@@ -58,7 +69,7 @@ if (emittedObjects.some((object) => object.type !== "object" || object.additiona
 const lock = readFileSync(new URL("../bun.lock", import.meta.url));
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 class LocalStore extends JSONSchemaStore {
-  async fetch(address) { return address === sharedSchema.$id ? sharedSchema : undefined; }
+  async fetch(address) { return dependencies.get(address)?.schema; }
 }
 const input = new JSONSchemaInput(new LocalStore());
 if (selectedNames) {
@@ -81,6 +92,7 @@ const provenance = [
   "DTO generation is not schema, authorization or cryptographic validation.",
 ];
 if (["observability", "screen", "sync3", "company"].includes(selected)) provenance.push(`Shared schema SHA-256: ${sha256(sharedSource)}`);
+if (selected === "organizations") for (const [identity, dependency] of dependencies) provenance.push(`Dependency ${identity} SHA-256: ${sha256(dependency.source)}`);
 const result = await quicktype({
   lang: language,
   inputData,

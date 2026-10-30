@@ -93,9 +93,9 @@ def main():
         rust = ["use serde::{Serialize, de::DeserializeOwned};", "use serde_json::Value;",
                 "fn check<T: Serialize + DeserializeOwned>(text: &str) { let value: Value = serde_json::from_str(text).unwrap(); let model: T = serde_json::from_value(value.clone()).unwrap(); assert_eq!(serde_json::to_value(model).unwrap(), value); }"]
         dart = ["import 'dart:convert';"]
-        for profile in [*samples, "auth", "devices", "telemetry", "observability", "sync", "sync3", "vault", "screen", "company", "personal"]:
+        for profile in [*samples, "auth", "devices", "telemetry", "observability", "sync", "sync3", "vault", "screen", "company", "personal", "organizations"]:
             rust.append(f"pub mod {profile};")
-            languages = ["rust"] if profile in {"telemetry","observability","sync","sync3","vault","screen","company","personal"} else ["rust", "dart"]
+            languages = ["rust"] if profile in {"telemetry","observability","sync","sync3","vault","screen","company","personal","organizations"} else ["rust", "dart"]
             for language in languages:
                 path = work / "src" / (profile + (".rs" if language == "rust" else ".dart"))
                 command = ["node", "scripts/generate-dtos.mjs", language, profile, str(path)]
@@ -104,7 +104,7 @@ def main():
                 run(command)
                 if first != path.read_bytes():
                     raise AssertionError("DTO generation is not deterministic")
-            if profile not in {"telemetry","observability","sync","sync3","vault","screen","company","personal"}:
+            if profile not in {"telemetry","observability","sync","sync3","vault","screen","company","personal","organizations"}:
                 dart.append(f"import '{profile}.dart' as {profile};")
         rust.append("fn main() {")
         dart += [
@@ -196,6 +196,18 @@ def main():
         rust.append(f'assert!(serde_json::from_str::<personal::PersonalDeviceList>(r#"{json.dumps(missing_context)}"#).is_err());')
         foreign = personal | {"context": personal["context"] | {"session_token": "injected"}}
         rust.append(f'assert!(serde_json::from_str::<personal::PersonalDeviceList>(r#"{json.dumps(foreign)}"#).is_err());')
+        organizations = {"context": personal["context"], "organizations": [{"company": company, "member": member}]}
+        rust.append(f'check::<organizations::OrganizationList>(r#"{json.dumps(organizations)}"#);')
+        organization = {"context": {"principal_id": "user-1", "space": {"kind": "organization", "id": "company-1"}, "membership_revision": 1}, "overview": {"company": company, "member": member}}
+        rust.append(f'check::<organizations::OrganizationOverview>(r#"{json.dumps(organization)}"#);')
+        missing = dict(organization); del missing["context"]
+        rust.append(f'assert!(serde_json::from_str::<organizations::OrganizationOverview>(r#"{json.dumps(missing)}"#).is_err());')
+        injected = organization | {"context": organization["context"] | {"vault_key": "injected"}}
+        rust.append(f'assert!(serde_json::from_str::<organizations::OrganizationOverview>(r#"{json.dumps(injected)}"#).is_err());')
+        captured = {"membership_revision": 4, "payload": {"operation_id": "01900000-0000-7000-8000-000000000001"}}
+        rust.append(f'check::<organizations::OrganizationRevokeRequest>(r#"{json.dumps(captured)}"#);')
+        missing = dict(captured); del missing["membership_revision"]
+        rust.append(f'assert!(serde_json::from_str::<organizations::OrganizationRevokeRequest>(r#"{json.dumps(missing)}"#).is_err());')
         rust.append("}")
         dart.append("bool missingRejected=false; try { devices.DeviceList.fromJson({\"devices\":[]}); } on FormatException { missingRejected=true; } if (!missingRejected) throw StateError(\"required nullable key missing\");")
         dart.append("}")

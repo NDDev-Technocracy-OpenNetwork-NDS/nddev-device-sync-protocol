@@ -14,6 +14,7 @@ Schemas contain no private identifiers, credentials or deployment URLs.
 | `contracts/v2/screen.schema.json` | Owned RDS binding/finite view control for Rust Accounts/Server callers; native grant/capture/render acceptance belongs to those consumers |
 | `contracts/v2/telemetry-*.schema.json` | Closed flat server-event envelope and bounded internal ingestion batch; delivery acceptance belongs to consumers |
 | `openapi/sync-v3.yaml`, `contracts/v3/sync.schema.json` | Bounded history, original-row checkpoint transfer and explicit expiry outcomes; activation requires the coordinated reader/writer boundary |
+| `openapi/organizations-v3.yaml`, `contracts/v3/organizations.schema.json` | Independent memberships, original personal ownership and captured membership revisions; requires the coordinated Server/Accounts/Organizations consumer transition |
 
 Obsolete speculative v1 enrollment/sync/telemetry definitions remain in immutable
 Git history and published tags, not as parallel active contracts. Breaking changes
@@ -33,3 +34,5 @@ Release journals live in [GitHub Releases](https://github.com/NDDev-Technocracy-
 The [personal context profile](docs/personal-context-v3.md) adds an explicitly
 scoped read-only device inventory. It retains existing v2 wire/storage identities;
 providers and consumers qualify context relationships and actual authority.
+The [organization profile](docs/organization-spaces-v3.md) defines separately
+selected organizations, immutable scoped commands and the retained-data boundary.
