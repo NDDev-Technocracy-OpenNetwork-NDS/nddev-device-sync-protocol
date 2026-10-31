@@ -196,9 +196,10 @@ existing session expiry; it is not a request authorization credential. Reconnect
 revalidates the session/device before sending pending operations. Local sign-out
 invalidates offline access even when remote revocation cannot yet complete.
 
-## Owned RDS control (source alpha.17)
+## Owned remote-screen control (source alpha.17)
 
-`contracts/v2/screen.schema.json` defines the fixed `/v2/rds` operations for the
+`contracts/v2/screen.schema.json` defines the fixed `/v2/rds` operations (a frozen
+legacy path: the remote module keeps it until the NDS-native screen contract) for the
 Core `ScreenStore` boundary. Use the existing owner session AND enrolled-device
 HTTP signature for every operation, including reads and end. Browser callers
 use the existing exact-origin cookie adapter AND device signature. Consume a
@@ -278,7 +279,7 @@ the exact original artifact. A native artifact is canonical unpadded base64url o
 1..8192 decoded bytes (at most 10923 characters), marked `x-sensitive`. Decode
 with that bound and canonical re-encode equality. Keep it in Rust control I/O;
 never Dart/Flutter, URLs, logs, synchronization or telemetry. The server stores
-opaque bytes, not native permission. RDS verifies the real native signature,
+opaque bytes, not native permission. The remote module verifies the real native signature,
 issuer/subject/audience/expiry, unique view id as native tenant, exact host binding
 revision, selected display and DesktopView-only scope; no control/other service.
 

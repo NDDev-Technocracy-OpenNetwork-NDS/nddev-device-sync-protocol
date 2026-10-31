@@ -209,7 +209,7 @@ paths:
       description: >-
         Check current administrator and expected member revision atomically.
         Never remove or demote the last active administrator. Removal denies
-        this organization and its administrative RDS authority, preserving
+        this organization and its administrative remote-screen authority, preserving
         personal sessions, keys, ciphertext, devices and other memberships.
         Receipt replay is still authorized against current membership.
       requestBody:
