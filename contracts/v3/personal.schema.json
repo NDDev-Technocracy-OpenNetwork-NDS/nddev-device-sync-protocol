@@ -82,6 +82,7 @@
       "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/Device"
     },
     "DevicePurpose": {
+      "title": "DevicePurpose",
       "type": "string",
       "enum": [
         "server-hosting",
@@ -94,6 +95,7 @@
       "description": "Intended workload profile from the architecture's device placement table. Describes intent only; never a grant."
     },
     "ControlMode": {
+      "title": "ControlMode",
       "type": "string",
       "enum": [
         "fullauto",
