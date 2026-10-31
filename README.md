@@ -11,7 +11,7 @@ Schemas contain no private identifiers, credentials or deployment URLs.
 | --- | --- |
 | `openapi/control-plane.yaml`, `contracts/v1/*-response.schema.json` | Current server health, readiness and AGPL source offer |
 | `openapi/control-plane-v2.yaml`, `contracts/v2/control-plane.schema.json` | Email/GitHub/passkey identity, enrollment, sync, native vault keys and signed client observability; availability belongs to runtime adapters |
-| `contracts/v2/screen.schema.json` | Owned RDS binding/finite view control for Rust Accounts/Server callers; native grant/capture/render acceptance belongs to those consumers |
+| `contracts/v2/screen.schema.json` | Owned remote-screen binding/finite view control (legacy `/v2/rds` wire) for Rust Accounts/Server callers; native grant/capture/render acceptance belongs to those consumers |
 | `contracts/v2/telemetry-*.schema.json` | Closed flat server-event envelope and bounded internal ingestion batch; delivery acceptance belongs to consumers |
 | `openapi/sync-v3.yaml`, `contracts/v3/sync.schema.json` | Bounded history, original-row checkpoint transfer and explicit expiry outcomes; activation requires the coordinated reader/writer boundary |
 | `openapi/organizations-v3.yaml`, `contracts/v3/organizations.schema.json` | Independent memberships, original personal ownership and captured membership revisions; requires the coordinated Server/Accounts/Organizations consumer transition |
