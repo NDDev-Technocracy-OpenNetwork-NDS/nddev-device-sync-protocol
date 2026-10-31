@@ -34,3 +34,23 @@ contract. Responses are bounded and `Cache-Control: no-store`. This read profile
 adds no mutation, signing protocol, organizational selection or remote operation.
 Actual Server/Accounts and retained-data acceptance qualify those boundaries;
 DTO generation and source validation do not establish them.
+
+## Device control policy
+
+`GET /v3/personal/devices/{device_id}/policy` returns one owned device's purpose
+profiles and authenticated `fullauto`/`manual` control mode (ADR 0018) with the
+same personal context. `PUT` replaces it by compare-and-set on `revision`:
+`expected_revision` must equal the current value, otherwise the response is
+`409 operation_conflict` and the caller reads again. Only the device's own active
+owner can replace it; revoked or foreign devices are refused without disclosing
+their existence. Widening `manual` into `fullauto` returns
+`403 recent_authentication_required` unless the session's sign-in proof is recent;
+narrowing and reclassification need only an active session.
+
+New enrollments start as `fullauto`/`desktop`; devices enrolled before this
+profile are `manual`/`desktop` at revision 1, so the transition never widens an
+existing module checklist. A policy revision never changes the device ID,
+display name, public key or enrollment proof. Purposes describe intent and grant
+nothing. The mode is stored control state; clients must not accept it as a
+per-command flag, and an unreachable server never widens a client's cached mode.
+The existing `Device` and inventory DTOs are unchanged for current consumers.
