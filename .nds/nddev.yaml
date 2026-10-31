@@ -1,5 +1,5 @@
 # std-0001 repository manifest — schema: `nddev schema manifest`.
-apiVersion: nddev.ai/v1alpha3
+apiVersion: nddev.ai/v1alpha4
 kind: Repository
 metadata:
   id: nddev-device-sync-protocol
@@ -8,7 +8,6 @@ metadata:
 spec:
   standard:
     id: std-0001
-    version: 3.0.0
   role: component
   profiles:
   - rust
@@ -23,38 +22,15 @@ spec:
   - name: protocol
     source: contracts
     direction: schema-first
-  variations:
-  - paths: [.gds]
-    purpose: config
-    reason: GDS-owned repository anchor and policy projections; std-0001 excludes .gds by its own boundary rule.
-    decision: {state: approved, by: rldyourmnd, date: "2026-10-22", origin: document, reference: standarts/decisions/0013-estate-hygiene-and-standards-adoption.md}
-  - paths: [module.yaml]
-    purpose: manifest
-    reason: NDS module descriptor owned by the product standards corpus.
-    decision: {state: approved, by: rldyourmnd, date: "2026-10-22", origin: document, reference: standarts/decisions/0013-estate-hygiene-and-standards-adoption.md}
-  - paths: [standarts.lock]
-    purpose: lock
-    reason: NDS contract lock pinning the standards source.
-    decision: {state: approved, by: rldyourmnd, date: "2026-10-22", origin: document, reference: standarts/decisions/0013-estate-hygiene-and-standards-adoption.md}
-  - paths: [contracts, openapi]
-    purpose: manifest
-    reason: Canonical versioned wire schemas and OpenAPI surfaces owned by this repository.
-    decision: {state: approved, by: rldyourmnd, date: "2026-10-22", origin: document, reference: standarts/decisions/0013-estate-hygiene-and-standards-adoption.md}
-  - paths: [scripts]
-    purpose: tool-config
-    reason: Native schema validators and code generators owned by the repository.
-    decision: {state: approved, by: rldyourmnd, date: "2026-10-22", origin: document, reference: standarts/decisions/0013-estate-hygiene-and-standards-adoption.md}
-  - paths: [.python-version, .node-version]
-    purpose: tool-config
-    reason: Pinned toolchain selectors consumed by CI and local setup.
-    decision: {state: approved, by: rldyourmnd, date: "2026-10-22", origin: document, reference: standarts/decisions/0013-estate-hygiene-and-standards-adoption.md}
-  - paths: [requirements.in, requirements.lock]
-    purpose: lock
-    reason: Hash-locked Python validation environment owned by the repository.
-    decision: {state: approved, by: rldyourmnd, date: "2026-10-22", origin: document, reference: standarts/decisions/0013-estate-hygiene-and-standards-adoption.md}
   modules:
   - .
   - crates/signatures
+  adaptations:
+  - docs/decisions/0001-nds-contract-locations.md
+  extensions:
+    nddev.standards-system:
+      standards:
+      - std-0001
   adapters:
   - claude
   - cursor
