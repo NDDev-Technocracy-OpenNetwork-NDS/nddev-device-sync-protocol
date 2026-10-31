@@ -16,7 +16,7 @@ const authNames = [
   "Session", "SessionRenewal", "SessionIssued", "BrowserSessionIssued", "BrowserCapabilities", "GithubStart", "GithubExchangeRequest", "GithubPending", "GithubApprovalForm", "PasskeyStart", "PasskeyRequest", "PasskeyStatus", "PasskeyInfo", "PasskeyList", "PasskeyRevocation", "Error",
 ];
 const deviceNames = ["EnrollmentRequest", "EnrollmentChallenge", "EnrollmentProof", "Device", "DeviceList", "Error"];
-const personalNames = ["PersonalContext", "PersonalSpace", "PersonalDeviceList", "Device", "Error"];
+const personalNames = ["PersonalContext", "PersonalSpace", "PersonalDeviceList", "Device", "PersonalDevicePolicy", "DevicePolicy", "DevicePolicyUpdate", "Error"];
 const organizationsNames = ["OrganizationList", "OrganizationContext", "OrganizationSpace", "OrganizationCreateRequest", "OrganizationOverview", "OrganizationMemberPage", "OrganizationInvitationPage", "OrganizationInvitationResult", "OrganizationMemberResult", "PersonalContext", "PersonalSpace", "CompanyOverview", "Company", "CompanyMember", "CompanyMemberPage", "CompanyInvitationPage", "CompanyInvitation", "OrganizationInvitationRequest", "OrganizationRevokeRequest", "OrganizationMemberChangeRequest", "CompanyInvitationRequest", "CompanyRevokeRequest", "CompanyMemberChangeRequest"];
 const vaultNames = ["VaultKey", "VaultKeyRequest", "Error"];
 const syncNames = ["SyncOperation", "EncryptedPayload", "SyncApplied", "SyncConflict", "SyncPage", "SyncEntry", "Error"];

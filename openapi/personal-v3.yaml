@@ -4,8 +4,9 @@ info:
   version: 3.0.0-alpha.1
   license:
     name: AGPL-3.0-only
-  description: Read-only explicit personal context; original v2 authentication, device
-    inventory constraints and no-store behavior remain. No organizational authority
+  description: Explicit personal context; original v2 authentication, device
+    inventory constraints and no-store behavior remain. The device policy endpoint
+    is the only mutation in this profile. No organizational authority
     is inferred from personal IDs. Each endpoint/profile owns its protocol version;
     this is not sync-v3 payload compatibility.
 servers:
@@ -40,6 +41,78 @@ paths:
       security:
       - ownerSession: []
       - browserSession: []
+  /v3/personal/devices/{device_id}/policy:
+    parameters:
+    - name: device_id
+      in: path
+      required: true
+      schema:
+        $ref: ../contracts/v2/control-plane.schema.json#/$defs/Identifier
+    get:
+      operationId: getPersonalDevicePolicy
+      description: Return the current purpose profiles and fullauto/manual control
+        mode of one device owned by the authenticated principal. Unknown or foreign
+        devices are refused without disclosing whether they exist. A policy is
+        authenticated control state, not a per-command flag.
+      responses:
+        '200':
+          description: Device policy under the original authenticated personal context
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/personal.schema.json#/$defs/PersonalDevicePolicy
+        '400':
+          $ref: control-plane-v2.yaml#/components/responses/InvalidRequest
+        '401':
+          $ref: control-plane-v2.yaml#/components/responses/AuthenticationFailed
+        '429':
+          $ref: control-plane-v2.yaml#/components/responses/RateLimited
+        '503':
+          $ref: control-plane-v2.yaml#/components/responses/ServiceUnavailable
+      security:
+      - ownerSession: []
+      - browserSession: []
+    put:
+      operationId: replacePersonalDevicePolicy
+      description: Compare-and-set replacement by the device's own active owner.
+        Widening manual into fullauto requires a recent sign-in; narrowing and
+        reclassification need only an active session. Revoked devices are refused.
+        Device ID, key and proof never change; the revision advances by one.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../contracts/v3/personal.schema.json#/$defs/DevicePolicyUpdate
+      responses:
+        '200':
+          description: Replacement committed; the returned revision is current
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v3/personal.schema.json#/$defs/PersonalDevicePolicy
+        '400':
+          $ref: control-plane-v2.yaml#/components/responses/InvalidRequest
+        '401':
+          $ref: control-plane-v2.yaml#/components/responses/AuthenticationFailed
+        '403':
+          $ref: control-plane-v2.yaml#/components/responses/RecentAuthenticationRequired
+        '409':
+          description: The expected revision is no longer current (operation_conflict);
+            read the policy again before deciding.
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v2/control-plane.schema.json#/$defs/Error
+        '429':
+          $ref: control-plane-v2.yaml#/components/responses/RateLimited
+        '503':
+          $ref: control-plane-v2.yaml#/components/responses/ServiceUnavailable
+      security:
+      - ownerSession: []
+      - browserSession: []
+      parameters:
+      - $ref: control-plane-v2.yaml#/components/parameters/BrowserClient
 components:
   securitySchemes:
     ownerSession:

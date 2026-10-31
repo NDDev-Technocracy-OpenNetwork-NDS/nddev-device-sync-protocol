@@ -8,6 +8,12 @@
       "$ref": "#/$defs/PersonalDeviceList"
     },
     {
+      "$ref": "#/$defs/PersonalDevicePolicy"
+    },
+    {
+      "$ref": "#/$defs/DevicePolicyUpdate"
+    },
+    {
       "$ref": "#/$defs/Error"
     }
   ],
@@ -74,6 +80,107 @@
     },
     "Device": {
       "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/Device"
+    },
+    "DevicePurpose": {
+      "title": "DevicePurpose",
+      "type": "string",
+      "enum": [
+        "server-hosting",
+        "server-dev-desktop",
+        "server-desktop",
+        "build-dev-desktop",
+        "dev-desktop",
+        "desktop"
+      ],
+      "description": "Intended workload profile from the architecture's device placement table. Describes intent only; never a grant."
+    },
+    "ControlMode": {
+      "title": "ControlMode",
+      "type": "string",
+      "enum": [
+        "fullauto",
+        "manual"
+      ],
+      "description": "Authenticated device action-admission mode (ADR 0018). Fullauto admits supported system tools without an NDS checklist; manual keeps the owner's explicit module configuration."
+    },
+    "PolicyRevision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "DevicePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "purposes",
+        "revision"
+      ],
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/ControlMode"
+        },
+        "purposes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DevicePurpose"
+          },
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true
+        },
+        "revision": {
+          "$ref": "#/$defs/PolicyRevision"
+        }
+      }
+    },
+    "PersonalDevicePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context",
+        "device_id",
+        "policy"
+      ],
+      "description": "Current policy of one device owned by the authenticated principal. Device identity, key and proof are unaffected by policy revisions.",
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/PersonalContext"
+        },
+        "device_id": {
+          "$ref": "https://nddev.ai/schemas/nddev-device-sync/v2/control-plane.schema.json#/$defs/Identifier"
+        },
+        "policy": {
+          "$ref": "#/$defs/DevicePolicy"
+        }
+      }
+    },
+    "DevicePolicyUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expected_revision",
+        "mode",
+        "purposes"
+      ],
+      "description": "Compare-and-set replacement by the device owner. Widening manual into fullauto requires a recent sign-in.",
+      "properties": {
+        "expected_revision": {
+          "$ref": "#/$defs/PolicyRevision"
+        },
+        "mode": {
+          "$ref": "#/$defs/ControlMode"
+        },
+        "purposes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DevicePurpose"
+          },
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true
+        }
+      }
     }
   }
 }
