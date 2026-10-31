@@ -196,6 +196,12 @@ def main():
         rust.append(f'assert!(serde_json::from_str::<personal::PersonalDeviceList>(r#"{json.dumps(missing_context)}"#).is_err());')
         foreign = personal | {"context": personal["context"] | {"session_token": "injected"}}
         rust.append(f'assert!(serde_json::from_str::<personal::PersonalDeviceList>(r#"{json.dumps(foreign)}"#).is_err());')
+        policy = {"context": personal["context"], "device_id": "device-1", "policy": {"mode": "fullauto", "purposes": ["desktop", "dev-desktop"], "revision": 1}}
+        rust.append(f'check::<personal::PersonalDevicePolicy>(r#"{json.dumps(policy)}"#);')
+        update = {"expected_revision": 9007199254740991, "mode": "manual", "purposes": ["server-hosting"]}
+        rust.append(f'check::<personal::DevicePolicyUpdate>(r#"{json.dumps(update)}"#);')
+        for bad in [update | {"mode": "auto"}, update | {"purposes": ["admin"]}, update | {"device_id": "injected"}]:
+            rust.append(f'assert!(serde_json::from_str::<personal::DevicePolicyUpdate>(r#"{json.dumps(bad)}"#).is_err());')
         organizations = {"context": personal["context"], "organizations": [{"company": company, "member": member}]}
         rust.append(f'check::<organizations::OrganizationList>(r#"{json.dumps(organizations)}"#);')
         organization = {"context": {"principal_id": "user-1", "space": {"kind": "organization", "id": "company-1"}, "membership_revision": 1}, "overview": {"company": company, "member": member}}
