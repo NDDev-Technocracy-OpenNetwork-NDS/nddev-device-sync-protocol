@@ -31,7 +31,7 @@ project only current original-company membership; mutations without the captured
 revision refuse. No fallback relabels a request into another organization.
 
 Removing a membership closes its administrative access, preserving personal
-sessions, keys, device identity and other memberships. Legacy RDS control keeps
+sessions, keys, device identity and other memberships. Legacy remote-screen control keeps
 its original-company boundary and personal own-device access; this profile does
-not grant new organization-wide RDS or shared Vault authority. Organization key
+not grant new organization-wide remote-screen or shared Vault authority. Organization key
 distribution and new module-state namespaces remain their owning later cohorts.
