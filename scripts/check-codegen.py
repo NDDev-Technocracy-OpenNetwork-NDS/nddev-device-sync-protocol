@@ -62,6 +62,14 @@ def main():
         "SignalDelivery":delivery,"ObservabilityStatus":{"export_mode":"enabled","queued_events":0,"queued_bytes":0,"delivered_events":0,"expired_events":0,"sources":[source],"logs":delivery,"metrics":delivery,"traces":delivery},
         "ClientTelemetryPolicy":{"export_mode":"enabled"},
         "ObservabilityError":{"error":"invalid_request"},
+        "CollectionPolicy":{"mode":"debug","revision":2,"debug_expires_at":"2026-01-01T01:00:00Z"},
+        "DiagnosticSearchRequest":{"scope":"organization","organization_id":"org-1","signal":"logs","start":"2026-01-01T00:00:00Z","end":"2026-01-01T01:00:00Z","filters":{"operation_id":"op-1"},"limit":50},
+        "DiagnosticFilters":{"event_name":"module.admission.manual","outcome":"denied"},
+        "DiagnosticRecord":{"timestamp":"2026-01-01T00:00:01Z","signal":"traces","service_name":"nddev-device-sync-agent","name":"local_use","duration_ms":1.5,"trace_id":"t1"},
+        "DiagnosticSearchPage":{"records":[{"timestamp":"2026-01-01T00:00:01Z","signal":"metrics","service_name":"nddev-device-sync-server","name":"requests","value":3.5}],"truncated":False,"took_ms":4},
+        "GlobalDiagnosticChallenge":{"challenge":"A"*43,"namespace":"nds-global-admin@nddev.ai","expires_at":"2026-01-01T00:05:00Z"},
+        "GlobalDiagnosticProof":{"challenge":"A"*43,"signature":"-----BEGIN SSH SIGNATURE-----\n"+"U1NIU0lH"*10+"\n-----END SSH SIGNATURE-----\n"},
+        "GlobalDiagnosticGrant":{"expires_at":"2026-01-01T00:15:00Z","key_fingerprint":"SHA256:"+"A"*43},
     }
     vault_samples = {"VaultKey": {"key_id": "01900000-0000-7000-8000-000000000001", "key_material": "A" * 64}, "VaultKeyRequest": {"existing_key": None}, "Error": {"error": "vault_key_registration_required"}}
     screen_binding = {"device_id":"device-1","endpoint_public_key":"A"*43,
