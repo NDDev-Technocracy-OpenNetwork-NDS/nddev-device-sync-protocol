@@ -157,6 +157,31 @@ resuming rechecks operator policy. Sign-out closes the account-specific feeds.
 Incident actions preserve operation_id/body across uncertain retries and use
 revision checks; list pages remain bounded and expose their generation time.
 
+
+## Collection policy and diagnostic search (P2)
+
+`GET /v2/observability/collection-policy` returns the client's one effective
+collection policy: `standard`, `debug` (always with `debug_expires_at`, after which
+the client returns to `standard`) or `off`, plus a revision. `off` collects and
+exports nothing new and keeps no hidden stream; functional journals and action results
+never depend on it. The earlier `client-policy` export flag stays for current clients.
+
+`POST /v2/observability/search` reads stored records for one signal (logs, traces or
+metrics) in a window no longer than the one-week diagnostic retention, with exact
+identifier filters only. The server derives the caller's identity and rights from the
+signed request: `member` sees the caller's own records, `organization` one
+organization the caller administers, and `global` every record only while the same
+session and device hold a current global grant. Records are a projection onto fixed,
+redacted fields; stored rows, query syntax and storage credentials never cross the
+boundary. Wrong scopes answer `forbidden_scope` or `global_grant_required`.
+
+The global grant comes from the owner's global diagnostic administrator key.
+`POST /v2/observability/global-challenge` issues a one-time challenge bound to the
+session and device; `POST /v2/observability/global-grant` accepts an SSHSIG signature
+(OpenSSH `PROTOCOL.sshsig`, namespace `nds-global-admin@nddev.ai`) over the exact
+challenge bytes, verifies it against the server's allowed-signers set and grants global
+scope to that session and device until `expires_at`. The grant is never a bearer token;
+a replayed or expired challenge is refused.
 ## Passkey lifecycle
 
 Authenticated owners can list bounded public credential fingerprints and creation
