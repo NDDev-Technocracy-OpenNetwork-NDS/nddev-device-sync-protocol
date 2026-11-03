@@ -345,5 +345,52 @@ class Contracts(unittest.TestCase):
         self.assertFalse(valid("SignalDelivery",delivery|{"notification_sent":True}))
 
 
+    def test_collection_policy_is_one_finite_mode(self):
+        schema=self.documents[BASE+"v2/observability.schema.json"]
+        valid=lambda value:validator(schema,self.registry,"CollectionPolicy").is_valid(value)
+        self.assertTrue(valid({"mode":"standard","revision":1}))
+        self.assertTrue(valid({"mode":"off","revision":2}))
+        self.assertTrue(valid({"mode":"debug","revision":3,"debug_expires_at":"2026-11-01T02:00:00Z"}))
+        self.assertFalse(valid({"mode":"debug","revision":3}), "debug must carry its expiry")
+        self.assertFalse(valid({"mode":"off","revision":2,"debug_expires_at":"2026-11-01T02:00:00Z"}))
+        self.assertFalse(valid({"mode":"verbose","revision":1}))
+        self.assertFalse(valid({"mode":"standard","revision":1,"exporter":"other"}))
+
+    def test_diagnostic_search_is_scoped_bounded_and_never_query_syntax(self):
+        schema=self.documents[BASE+"v2/observability.schema.json"]
+        valid=lambda definition,value:validator(schema,self.registry,definition).is_valid(value)
+        request={"scope":"member","signal":"logs","start":"2026-11-01T00:00:00Z","end":"2026-11-01T01:00:00Z","limit":50,
+                 "filters":{"operation_id":"op-1","event_name":"module.admission.fullauto"}}
+        self.assertTrue(valid("DiagnosticSearchRequest",request))
+        self.assertTrue(valid("DiagnosticSearchRequest",request|{"scope":"organization","organization_id":"org-1"}))
+        self.assertFalse(valid("DiagnosticSearchRequest",request|{"scope":"organization"}))
+        self.assertFalse(valid("DiagnosticSearchRequest",request|{"organization_id":"org-1"}))
+        for key,value in [("limit",0),("limit",201),("signal","files"),("user_id","someone-else"),("query","SELECT *")]:
+            self.assertFalse(valid("DiagnosticSearchRequest",request|{key:value}),key)
+        self.assertFalse(valid("DiagnosticSearchRequest",request|{"filters":{"event_name":"x' OR 1=1 --"}}))
+        self.assertFalse(valid("DiagnosticSearchRequest",request|{"filters":{"message":"free text"}}))
+        record={"timestamp":"2026-11-01T00:00:01Z","signal":"logs","service_name":"nddev-device-sync-agent",
+                "event_name":"module.admission.fullauto","operation_id":"op-1","user_id":"user-1"}
+        page={"records":[record],"truncated":False,"took_ms":12}
+        self.assertTrue(valid("DiagnosticSearchPage",page))
+        self.assertFalse(valid("DiagnosticSearchPage",page|{"records":[record]*201}))
+        self.assertFalse(valid("DiagnosticRecord",record|{"raw":{"message":"x"}}))
+
+    def test_global_diagnostic_grant_needs_an_sshsig_proof(self):
+        schema=self.documents[BASE+"v2/observability.schema.json"]
+        valid=lambda definition,value:validator(schema,self.registry,definition).is_valid(value)
+        challenge="A"*43
+        self.assertTrue(valid("GlobalDiagnosticChallenge",{"challenge":challenge,"namespace":"nds-global-admin@nddev.ai","expires_at":"2026-11-01T00:05:00Z"}))
+        self.assertFalse(valid("GlobalDiagnosticChallenge",{"challenge":challenge,"namespace":"git","expires_at":"2026-11-01T00:05:00Z"}))
+        signature="-----BEGIN SSH SIGNATURE-----\n"+"U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAg"*2+"\n-----END SSH SIGNATURE-----\n"
+        self.assertTrue(valid("GlobalDiagnosticProof",{"challenge":challenge,"signature":signature}))
+        for bad in ["not a signature","-----BEGIN PGP SIGNATURE-----\nabc\n-----END PGP SIGNATURE-----\n"]:
+            self.assertFalse(valid("GlobalDiagnosticProof",{"challenge":challenge,"signature":bad}))
+        self.assertFalse(valid("GlobalDiagnosticProof",{"challenge":"short","signature":signature}))
+        grant={"expires_at":"2026-11-01T00:15:00Z","key_fingerprint":"SHA256:QRdeCjmSIGvn0H+ckgyoc8gjLTgSUoxuS7dXzX/3Ct8"}
+        self.assertTrue(valid("GlobalDiagnosticGrant",grant))
+        self.assertFalse(valid("GlobalDiagnosticGrant",grant|{"token":"bearer"}))
+
+
 if __name__ == "__main__":
     unittest.main()

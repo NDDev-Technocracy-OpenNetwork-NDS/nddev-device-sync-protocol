@@ -22,7 +22,9 @@ const vaultNames = ["VaultKey", "VaultKeyRequest", "Error"];
 const syncNames = ["SyncOperation", "EncryptedPayload", "SyncApplied", "SyncConflict", "SyncPage", "SyncEntry", "Error"];
 const sync3Names = ["SyncOperationV3", "Lifecycle", "EncryptedPayload", "SyncCapabilities", "SyncRow", "SyncDeltaPage", "SyncBasePage", "SyncExpired", "Error", "SyncApplied", "SyncConflict"];
 const observabilityNames = ["Incident", "IncidentPage", "IncidentAction", "SilenceAction", "SourceHealth",
-  "IngressReceipt", "SignalDelivery", "ObservabilityStatus", "ClientTelemetryPolicy", "ObservabilityError"];
+  "IngressReceipt", "SignalDelivery", "ObservabilityStatus", "ClientTelemetryPolicy", "ObservabilityError",
+  "CollectionPolicy", "DiagnosticSearchRequest", "DiagnosticFilters", "DiagnosticRecord", "DiagnosticSearchPage",
+  "GlobalDiagnosticChallenge", "GlobalDiagnosticProof", "GlobalDiagnosticGrant"];
 const companyNames = ["Company", "CompanyMember", "CompanyOverview", "CompanyInvitation", "CompanyMemberPage", "CompanyInvitationPage", "CompanyInvitationRequest", "CompanyRevokeRequest", "CompanyMemberChangeRequest", "CompanyError"];
 const screenNames = ["ScreenTarget", "ScreenTargetList", "ScreenBinding", "ScreenBindingResponse", "ScreenBindRequest", "ScreenViewRequest", "ScreenView", "ScreenIncoming", "ScreenViewResponse", "ScreenReadyRequest", "Error"];
 const [language, selected, output] = process.argv.slice(2);

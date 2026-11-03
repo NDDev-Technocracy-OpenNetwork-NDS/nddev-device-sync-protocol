@@ -915,6 +915,146 @@ paths:
           $ref: '#/components/responses/RateLimited'
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
+  /v2/observability/collection-policy:
+    get:
+      operationId: getCollectionPolicy
+      description: Current signed client receives its one effective collection policy (standard, debug until expiry, or off).
+      security:
+      - ownerSession: []
+        deviceSignature: []
+      - browserSession: []
+        deviceSignature: []
+      parameters:
+      - $ref: '#/components/parameters/SignatureInput'
+      - $ref: '#/components/parameters/Signature'
+      - $ref: '#/components/parameters/ContentDigest'
+      - $ref: '#/components/parameters/BrowserClient'
+      responses:
+        '200':
+          description: Authenticated result.
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v2/observability.schema.json#/$defs/CollectionPolicy
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/AuthenticationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /v2/observability/search:
+    post:
+      operationId: searchDiagnostics
+      description: Search stored diagnostic records in the caller scope, an administered organization, or with a current global grant every scope. The server derives identity and rights from the signed request.
+      security:
+      - ownerSession: []
+        deviceSignature: []
+      - browserSession: []
+        deviceSignature: []
+      parameters:
+      - $ref: '#/components/parameters/SignatureInput'
+      - $ref: '#/components/parameters/Signature'
+      - $ref: '#/components/parameters/ContentDigest'
+      - $ref: '#/components/parameters/BrowserClient'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../contracts/v2/observability.schema.json#/$defs/DiagnosticSearchRequest
+      responses:
+        '200':
+          description: Authenticated result.
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v2/observability.schema.json#/$defs/DiagnosticSearchPage
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '403':
+          description: The signed caller has no right to the requested diagnostic scope, or a global search lacks a current global grant.
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v2/observability.schema.json#/$defs/ObservabilityError
+        '401':
+          $ref: '#/components/responses/AuthenticationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /v2/observability/global-challenge:
+    post:
+      operationId: createGlobalDiagnosticChallenge
+      description: Issue a one-time challenge, bound to this session and device, for the global diagnostic administrator key.
+      security:
+      - ownerSession: []
+        deviceSignature: []
+      - browserSession: []
+        deviceSignature: []
+      parameters:
+      - $ref: '#/components/parameters/SignatureInput'
+      - $ref: '#/components/parameters/Signature'
+      - $ref: '#/components/parameters/ContentDigest'
+      - $ref: '#/components/parameters/BrowserClient'
+      responses:
+        '200':
+          description: Authenticated result.
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v2/observability.schema.json#/$defs/GlobalDiagnosticChallenge
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/AuthenticationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /v2/observability/global-grant:
+    post:
+      operationId: grantGlobalDiagnostics
+      description: Verify an SSHSIG signature by an allowed global diagnostic key over the issued challenge and grant global diagnostic scope to this session and device until expiry.
+      security:
+      - ownerSession: []
+        deviceSignature: []
+      - browserSession: []
+        deviceSignature: []
+      parameters:
+      - $ref: '#/components/parameters/SignatureInput'
+      - $ref: '#/components/parameters/Signature'
+      - $ref: '#/components/parameters/ContentDigest'
+      - $ref: '#/components/parameters/BrowserClient'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../contracts/v2/observability.schema.json#/$defs/GlobalDiagnosticProof
+      responses:
+        '200':
+          description: Authenticated result.
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v2/observability.schema.json#/$defs/GlobalDiagnosticGrant
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '403':
+          description: The signed caller has no right to the requested diagnostic scope, or a global search lacks a current global grant.
+          content:
+            application/json:
+              schema:
+                $ref: ../contracts/v2/observability.schema.json#/$defs/ObservabilityError
+        '401':
+          $ref: '#/components/responses/AuthenticationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
   /v2/observability/status:
     get:
       operationId: readClientObservabilityStatus
