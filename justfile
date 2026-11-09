@@ -11,7 +11,7 @@ setup:
 schema-check:
     .venv/bin/python scripts/validate.py
 
-test:
+test: codegen-check signatures-check
     .venv/bin/python -m unittest discover -s tests -v
 
 codegen-check:
@@ -23,4 +23,11 @@ signatures-check:
     cargo clippy --workspace --all-targets --locked --jobs 4 -- -D warnings
     cargo deny --locked check licenses sources
 
-check: schema-check test codegen-check signatures-check
+check: schema-check
+    just --fmt --check
+    cargo fmt --all -- --check
+    cargo deny --locked check licenses sources
+
+# Run the complete schema, generated consumer and native signature gates.
+verify: check test
+    cargo audit --deny warnings

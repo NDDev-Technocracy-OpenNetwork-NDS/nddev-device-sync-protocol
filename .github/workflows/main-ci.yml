@@ -2,7 +2,7 @@ name: main-ci
 
 on:
   push:
-    branches: [main]
+    branches: [dev, main]
   workflow_dispatch:
 
 permissions:
@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
+      - name: Disable external telemetry
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/telemetry@52d8302d2272967a21fd8e3ae594205588648777 # v0.6.28
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
@@ -46,11 +48,9 @@ jobs:
           add-job-id-key: "false"
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Install pinned quality tools
-        uses: NDDev-Technocracy-Standarts/std-0004-ci-cd-workflows/.github/actions/tools@c192c6adcf22088abf456635de614d42e8fa3f8d # nddev-cicd-v0.6.20
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@52d8302d2272967a21fd8e3ae594205588648777 # v0.6.28
         with:
-          # cargo-audit 0.22.2, cargo-deny 0.20.2 and cargo-nextest 0.9.149 from checksummed
-          # releases instead of compiling them with cargo install in every job.
-          capability: rust
+          tools: cargo-audit@0.22.2,cargo-deny@0.20.2,cargo-nextest@0.9.149
       - name: Install the verified Dart SDK
         shell: bash
         run: |
@@ -62,8 +62,10 @@ jobs:
           unzip -q "$dart_archive" -d "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/dart-sdk/bin" >> "$GITHUB_PATH"
       - name: Install locked validation and generation tools
-        run: just setup
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/recipe@52d8302d2272967a21fd8e3ae594205588648777 # v0.6.28
+        with:
+          recipe: setup
       - name: Validate schemas, boundaries and generated Rust/Dart consumers
-        run: just check
-      - name: Run the RustSec advisory audit
-        run: cargo audit --deny warnings
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/recipe@52d8302d2272967a21fd8e3ae594205588648777 # v0.6.28
+        with:
+          recipe: verify
