@@ -4,9 +4,15 @@ Use the pinned toolchain and the repository's `just` recipes. Keep runtime
 credentials, private estate data and live telemetry outside this repository.
 
 The `NDS checks / quality` job runs on GitHub-hosted Ubuntu with read-only
-repository permissions and immutable action pins. It checks this repository's
-current foundation. A green result is not deployment, release, integration or
-cross-platform acceptance. The repository owns its release and runtime acceptance checks.
+repository permissions and immutable action pins. Public shared recipe and asset
+actions prepare the exact tools and run the repository's Just commands.
+`just setup` prepares source inputs without compilation; `just check` runs only
+schema/OpenAPI semantics, Rust formatting and frozen dependency policy checks.
+`just test` retains rejection tests, real generated Rust/Dart consumer round-trips
+and Rust tests/Clippy. The full `just verify` also builds the release library and
+runs the retained advisory audit. Tests and builds belong on execution hosts or
+runners. A green result is not deployment, release, integration or cross-platform
+acceptance. The repository owns its release and runtime acceptance checks.
 
 ## Source compatibility
 
@@ -19,11 +25,14 @@ activate a new wire format, retention policy or deployed backend.
 ## Validation and projections
 
 `requirements.lock` pins and hashes the complete Python validator environment;
-`package-lock.json` pins quicktype and its dependencies. Update Python resolution
+`bun.lock` pins quicktype and its dependencies. Update Python resolution
 with `uv pip compile --generate-hashes -o requirements.lock requirements.in`,
 then run the complete gate. Tool versions are deliberate changes, not floating
 CI installs. The small Rust codegen acceptance harness uses its own locked
 dependencies in a disposable directory; this remains a schema repository.
+The current Python validators remain authoritative while their full Rust
+replacement is qualified. Source-command separation does not replace those
+validators or weaken their semantic checks.
 
 JSON Schema 2020-12 validation uses `jsonschema`, with explicit date-time, email
 and URI format validators. `openapi-spec-validator` checks OpenAPI 3.1 semantics.
