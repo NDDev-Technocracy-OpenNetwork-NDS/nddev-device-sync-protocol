@@ -21,10 +21,12 @@ Git history and published tags, not as parallel active contracts. Breaking chang
 use a new protocol major and a coordinated standards/consumer transition. Existing
 release locks keep their original meaning; this work does not move tags.
 
-Run `just setup`, then `just check` with the pinned Python, Node, Rust and Dart
-tooling. Checks validate JSON Schema/OpenAPI semantics, rejection boundaries and
-compiled Rust/Dart DTO round-trips. They do not prove a running authentication,
-sync or telemetry service. See [development](docs/development.md) for generation
+Run `just setup`, then `just check` for build-free JSON Schema/OpenAPI semantics,
+Rust formatting and frozen dependency policy checks. On an execution host or
+runner, `just test` retains rejection boundaries and compiled Rust/Dart DTO
+round-trips; `just verify` also builds the release library and audits advisories.
+These checks do not prove a running authentication, sync or telemetry service.
+See [development](docs/development.md) for generation
 and [v2 semantics](docs/protocol-v2.md) for trust and consistency rules. The
 [sync history lifecycle](docs/sync-lifecycle-v3.md) defines retained originals,
 checkpoint installation and the transition from existing data.
