@@ -46,11 +46,11 @@ jobs:
           add-job-id-key: "false"
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Prepare the registry's Rust tools
-        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@356a5b38a8fe5b4ac9d11266e42e6196dc6bde49 # v0.6.68
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@98ff340ab5d2e0f62821a6ee25fd4161b87f59ba # v0.6.69
         with:
           tools: cargo-nextest@0.9.151,cargo-deny@0.20.2
       - name: Prepare cargo-audit by digest
-        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/release-assets@356a5b38a8fe5b4ac9d11266e42e6196dc6bde49 # v0.6.68
+        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/release-assets@98ff340ab5d2e0f62821a6ee25fd4161b87f59ba # v0.6.69
         with:
           manifest: .github/ci-tools.json
           directory: ${{ runner.temp }}/ci-tools
