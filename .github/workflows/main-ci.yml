@@ -5,70 +5,28 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: main-validation
   cancel-in-progress: false
 
-env:
-  CARGO_PROFILE_DEV_DEBUG: 0
-  CARGO_PROFILE_TEST_DEBUG: 0
-
 jobs:
   quality:
+    if: github.event_name == 'push'
     runs-on: ubuntu-26.04
-    timeout-minutes: 20
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/qualify@6bd06a55307dccfd7057c1c3260067eb8adc93a1 # v0.6.79
         with:
-          persist-credentials: false
-          fetch-depth: 0
-      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3
-        with:
-          just-version: '1.59.0'
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
-        with:
-          python-version-file: .python-version
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
-        with:
-          bun-version-file: package.json
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        with:
-          node-version-file: .node-version
-      - name: Prepare the manifest-selected Rust compiler and components
-        run: |
-          rustc --version
-          cargo fmt --version
-          cargo clippy --version
-      - name: Restore the Cargo dependency and tool cache
-        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
-        with:
-          shared-key: native-contract
-          add-job-id-key: "false"
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-      - name: Prepare the registry's Rust tools
-        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/hosted-sdk@6bd06a55307dccfd7057c1c3260067eb8adc93a1 # v0.6.79
-        with:
-          tools: cargo-nextest@0.9.151,cargo-deny@0.20.2
-      - name: Prepare cargo-audit by digest
-        uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/release-assets@6bd06a55307dccfd7057c1c3260067eb8adc93a1 # v0.6.79
-        with:
-          manifest: .github/ci-tools.json
-          directory: ${{ runner.temp }}/ci-tools
-          add-to-path: true
-      - name: Install the verified Dart SDK
-        shell: bash
-        run: |
-          dart_archive="$RUNNER_TEMP/dart-sdk.zip"
-          curl --fail --show-error --location --retry 2 --max-time 300 \
-            https://storage.googleapis.com/dart-archive/channels/stable/release/3.13.5/sdk/dartsdk-linux-x64-release.zip \
-            --output "$dart_archive"
-          echo "ea864bc64df30a6b8bdf30b2e32550f7717d9a890de8f40293aeabb924fe232b  $dart_archive" | sha256sum --check -
-          unzip -q "$dart_archive" -d "$RUNNER_TEMP"
-          echo "$RUNNER_TEMP/dart-sdk/bin" >> "$GITHUB_PATH"
-      - name: Install locked validation and generation tools
-        run: just setup
-      - name: Run the complete source and native verification
-        run: just verify
+          check-workflow: check.yml
+          wait-minutes: "0"
+
+  manual:
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/check.yml
+    permissions:
+      contents: read

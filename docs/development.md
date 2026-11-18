@@ -3,9 +3,13 @@
 Use the pinned toolchain and the repository's `just` recipes. Keep runtime
 credentials, private estate data and live telemetry outside this repository.
 
-The `NDS checks / quality` job runs on GitHub-hosted Ubuntu with read-only
-repository permissions and immutable action pins. `just setup` prepares locked
-source inputs without compilation. `just check` runs schema/OpenAPI semantics,
+The shared `NDS checks` workflow runs on GitHub-hosted Ubuntu with read-only
+repository permissions and immutable CI pins. Pull requests run the short check.
+A push to `dev` runs the complete check. Promotion fast-forwards `main` to that
+checked commit. The `main-ci` push verifies the same result at that exact SHA.
+Its manual trigger runs the complete check through the same caller.
+
+`just setup` prepares locked source inputs without compilation. `just check` runs schema/OpenAPI semantics,
 Rust formatting and frozen dependency policy checks. `just test` retains every
 rejection test, generated Rust/Dart round-trip and Rust test/Clippy gate. The full
 `just verify` also builds the release library and runs the advisory audit. Tests

@@ -1,0 +1,20 @@
+name: promotion
+
+on:
+  # The action selects a checked dev SHA without running the triggering source.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows: [NDS checks]
+    branches: [dev]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  promote:
+    uses: NDDev-Technocracy-OpenNetwork/nddev-ci/.github/workflows/promote.yml@6bd06a55307dccfd7057c1c3260067eb8adc93a1 # v0.6.79
+    with:
+      check-workflow: check.yml
+    secrets: inherit # zizmor: ignore[secrets-inherit]
+    permissions:
+      actions: write
+      contents: read
