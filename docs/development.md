@@ -27,7 +27,9 @@ activate a new wire format, retention policy or deployed backend.
 `bun.lock` pins quicktype and its dependencies. Update Python resolution
 with `uv pip compile --generate-hashes -o requirements.lock requirements.in`,
 then run the complete gate. Tool versions are deliberate changes, not floating
-CI installs. The small Rust codegen acceptance harness uses its own locked
+CI installs. The binary-only validator uses the Python line in `.python-version`
+until all locked packages supply wheels for the newer interpreter.
+The small Rust codegen acceptance harness uses its own locked
 dependencies in a disposable directory; this remains a schema repository.
 
 JSON Schema 2020-12 validation uses `jsonschema`, with explicit date-time, email
