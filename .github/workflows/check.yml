@@ -3,6 +3,8 @@ name: NDS checks
 on:
   pull_request:
     branches: [main, dev]
+  push:
+    branches: [dev]
   workflow_dispatch:
 
 permissions:
@@ -17,7 +19,23 @@ env:
   CARGO_PROFILE_TEST_DEBUG: 0
 
 jobs:
+  shared:
+    uses: NDDev-Technocracy-OpenNetwork/nddev-ci/.github/workflows/check.yml@6bd06a55307dccfd7057c1c3260067eb8adc93a1 # v0.6.79
+    with:
+      hosted-runner: ubuntu-26.04
+      timeout-minutes: 20
+      setup: true
+      python-version: "3.14.10"
+      bun-version: "1.4.4"
+      node-version: "26.13.1"
+      rust-version: "1.100.0"
+      rust-components: "clippy,rustfmt"
+      dart-version: "3.13.5"
+      tools: cargo-nextest@0.9.151,cargo-deny@0.20.2
+      tool-assets: .github/ci-tools.json
+
   quality:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
