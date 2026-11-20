@@ -28,5 +28,5 @@ jobs:
       rust-version: "1.100.0"
       rust-components: "clippy,rustfmt"
       dart-version: "3.13.5"
-      tools: cargo-nextest@0.9.151,cargo-deny@0.20.2
+      tools: cargo-nextest@0.9.151
       tool-assets: .github/ci-tools.json
