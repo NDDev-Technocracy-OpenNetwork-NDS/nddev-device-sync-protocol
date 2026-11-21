@@ -22,7 +22,7 @@ jobs:
       hosted-runner: ubuntu-26.04
       timeout-minutes: 20
       setup: true
-      python-version: "3.14.10"
+      python-version: "3.15.2"
       bun-version: "1.4.4"
       node-version: "26.13.1"
       rust-version: "1.100.0"
