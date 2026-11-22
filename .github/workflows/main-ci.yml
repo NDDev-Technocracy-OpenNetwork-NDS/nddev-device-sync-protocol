@@ -20,7 +20,7 @@ jobs:
       contents: read
       actions: read
     steps:
-      - uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/qualify@534b2785b49d5d36d074902aa9eefcb5786d898a # v0.6.83
+      - uses: NDDev-Technocracy-OpenNetwork/nddev-ci/actions/qualify@6d2cdfdf3edba130dada52a8046b8a8e9f089204 # v0.6.97
         with:
           check-workflow: check.yml
           wait-minutes: "0"
