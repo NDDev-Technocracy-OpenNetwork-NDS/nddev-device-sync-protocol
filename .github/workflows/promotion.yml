@@ -11,7 +11,7 @@ permissions: {}
 
 jobs:
   promote:
-    uses: NDDev-Technocracy-OpenNetwork/nddev-ci/.github/workflows/promote.yml@969b1ca89612dfb457792228c0120204c5498a41 # v0.6.165
+    uses: NDDev-Technocracy-OpenNetwork/nddev-ci/.github/workflows/promote.yml@c92818085dff62e5e3aded10dc90efc13d85d3de # v0.6.167
     with:
       check-workflow: check.yml
     secrets: inherit # zizmor: ignore[secrets-inherit]

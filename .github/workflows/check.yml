@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   shared:
-    uses: NDDev-Technocracy-OpenNetwork/nddev-ci/.github/workflows/check.yml@969b1ca89612dfb457792228c0120204c5498a41 # v0.6.165
+    uses: NDDev-Technocracy-OpenNetwork/nddev-ci/.github/workflows/check.yml@c92818085dff62e5e3aded10dc90efc13d85d3de # v0.6.167
     with:
       hosted-runner: ubuntu-26.04
       timeout-minutes: 20
